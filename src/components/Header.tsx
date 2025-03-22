@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -38,13 +37,19 @@ const Header = () => {
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    scrollToSection(id);
+    // Navigate to home first if not on home page
+    if (location.pathname !== '/') {
+      window.location.href = `/#${id}`;
+    } else {
+      scrollToSection(id);
+    }
   };
 
   const navLinks = [
     { name: 'Home', path: '/', tooltip: 'Go to homepage' },
     { name: 'How It Works', path: '/#how-it-works', id: 'how-it-works', tooltip: 'Learn how Octavia works' },
     { name: 'Features', path: '/#features', id: 'features', tooltip: 'Explore Octavia features' },
+    { name: 'For Institutions', path: '/#institution-metrics', id: 'institution-metrics', tooltip: 'Learn about our institutional offerings' },
   ];
 
   const authLinks = [
@@ -64,7 +69,7 @@ const Header = () => {
               <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-white text-lg font-bold">O</span>
               </span>
-              <span className="font-medium text-xl">Octavia Artificial intelligence</span>
+              <span className="font-medium text-xl">Octavia AI</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent>
@@ -121,7 +126,6 @@ const Header = () => {
           ))}
           <Button 
             className="rounded-full px-6 shadow-md transition-all hover:shadow-lg hover:scale-105"
-            tooltip="Start your interview practice"
             asChild
           >
             <Link to="/interview">
@@ -134,7 +138,7 @@ const Header = () => {
         <div className="md:hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" tooltip="Navigation menu">
+              <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
