@@ -50,19 +50,40 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## Project Status
+
+This project is currently being prepared for Firebase integration. A new MCP server is being created to access data from another Firebase project.
+
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Firebase Admin SDK (for backend data access)
+- Model Context Protocol (MCP) SDK (for MCP server)
 
-## How can I deploy this project?
+## How can I run this project locally?
 
-Simply open [Lovable](https://lovable.dev/projects/21bb4659-713c-41f1-bac2-54d39a22da7b) and click on Share -> Publish.
+1. Clone the repository:
+   ```bash
+   git clone <YOUR_GIT_URL>
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd octavia-interview-buddy
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
 ## I want to use a custom domain - is that possible?
 
