@@ -25,3 +25,6 @@ dist-ssr
 
 # Ignore bun.lockb
 bun.lockb
+
+# Firebase credentials
+firebase_admin_config.json
