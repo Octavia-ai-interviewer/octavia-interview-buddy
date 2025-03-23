@@ -80,7 +80,12 @@ This project is built with:
    ```bash
    npm install
    ```
-4. Start the development server:
+4. Set up Firebase:
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Generate a new private key for your service account in Project Settings > Service Accounts
+   - Copy the `firebase_admin_config.json.example` file to `firebase_admin_config.json`
+   - Replace the placeholder values with your actual Firebase service account credentials
+5. Start the development server:
    ```bash
    npm run dev
    ```
