@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,9 @@ const ResumeUploadDialog = ({ open, onClose, onContinue, studentName }: ResumeUp
           <DialogTitle className="text-center text-2xl">
             Octavia AI Interviewer
           </DialogTitle>
+          <DialogDescription className="text-center">
+            Upload your resume or connect your LinkedIn profile
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-4">

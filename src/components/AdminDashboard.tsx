@@ -13,8 +13,10 @@ import {
   Filter,
   ChevronDown,
   Search,
-  Download
+  Download,
+  Mic
 } from 'lucide-react';
+import VapiConcurrencyMonitor from './VapiConcurrencyMonitor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, Tooltip } from 'recharts';
@@ -34,95 +36,48 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from 'react-router-dom';
 
+// Empty data structures for initial state - will be populated with real data as institutions use the platform
 const userActivityData = [
-  { name: 'Jan', value: 2500 },
-  { name: 'Feb', value: 3200 },
-  { name: 'Mar', value: 4100 },
-  { name: 'Apr', value: 4800 },
-  { name: 'May', value: 5500 },
-  { name: 'Jun', value: 6700 },
-  { name: 'Jul', value: 7800 },
-  { name: 'Aug', value: 8932 }
+  { name: 'Jan', value: 0 },
+  { name: 'Feb', value: 0 },
+  { name: 'Mar', value: 0 },
+  { name: 'Apr', value: 0 },
+  { name: 'May', value: 0 },
+  { name: 'Jun', value: 0 },
+  { name: 'Jul', value: 0 },
+  { name: 'Aug', value: 0 }
 ];
 
 const systemHealthData = [
-  { name: 'Mon', errors: 2 },
-  { name: 'Tue', errors: 1 },
-  { name: 'Wed', errors: 3 },
+  { name: 'Mon', errors: 0 },
+  { name: 'Tue', errors: 0 },
+  { name: 'Wed', errors: 0 },
   { name: 'Thu', errors: 0 },
-  { name: 'Fri', errors: 1 },
+  { name: 'Fri', errors: 0 },
   { name: 'Sat', errors: 0 },
   { name: 'Sun', errors: 0 }
 ];
 
-const institutionsData = [
-  { 
-    id: "1", 
-    name: "University of Technology", 
-    totalStudents: 1250, 
-    activeStudents: 980, 
-    interviewsCompleted: 3450, 
-    avgScore: 82, 
-    resumeUploads: 920,
-    licensesUsed: "78%",
-    engagement: "High"
-  },
-  { 
-    id: "2", 
-    name: "Business College", 
-    totalStudents: 850, 
-    activeStudents: 720, 
-    interviewsCompleted: 2100, 
-    avgScore: 79, 
-    resumeUploads: 680,
-    licensesUsed: "85%",
-    engagement: "Medium"
-  },
-  { 
-    id: "3", 
-    name: "Engineering Institute", 
-    totalStudents: 650, 
-    activeStudents: 590, 
-    interviewsCompleted: 1850, 
-    avgScore: 85, 
-    resumeUploads: 540,
-    licensesUsed: "90%",
-    engagement: "Very High"
-  },
-  { 
-    id: "4", 
-    name: "Liberal Arts College", 
-    totalStudents: 780, 
-    activeStudents: 520, 
-    interviewsCompleted: 1200, 
-    avgScore: 77, 
-    resumeUploads: 480,
-    licensesUsed: "67%",
-    engagement: "Medium"
-  },
-];
+// Empty institutions array - will be populated from Firebase
+const institutionsData = [];
 
+// Default empty analytics data
 const institutionAnalytics = {
   resumeMetrics: {
-    totalViews: 12450,
-    avgViewsPerResume: 28,
-    totalDownloads: 3200,
-    contactClickRate: "18%",
-    improvementRate: "65%"
+    totalViews: 0,
+    avgViewsPerResume: 0,
+    totalDownloads: 0,
+    contactClickRate: "0%",
+    improvementRate: "0%"
   },
   interviewMetrics: {
-    completionRate: "78%",
-    avgScore: 81,
-    commonWeaknesses: ["Communication clarity", "Specific examples", "Technical depth"],
-    topPerformingQuestions: ["Leadership experience", "Problem solving", "Team challenges"],
-    difficultyDistribution: { easy: "30%", medium: "45%", hard: "25%" }
+    completionRate: "0%",
+    avgScore: 0,
+    commonWeaknesses: [],
+    topPerformingQuestions: [],
+    difficultyDistribution: { easy: "0%", medium: "0%", hard: "0%" }
   },
-  departmentComparison: [
-    { name: "Computer Science", resumeScore: 84, interviewScore: 86 },
-    { name: "Business", resumeScore: 80, interviewScore: 78 },
-    { name: "Engineering", resumeScore: 88, interviewScore: 85 },
-    { name: "Liberal Arts", resumeScore: 76, interviewScore: 79 }
-  ]
+  departmentComparison: []
 };
 
 const AdminDashboard = () => {
@@ -151,8 +106,8 @@ const AdminDashboard = () => {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">8,932</div>
-                <p className="text-xs text-muted-foreground">+12% from last month</p>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">No data yet</p>
               </CardContent>
             </Card>
             
@@ -162,8 +117,8 @@ const AdminDashboard = () => {
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">24,589</div>
-                <p className="text-xs text-muted-foreground">+18% from last month</p>
+                <div className="text-2xl font-bold">0</div>
+                <p className="text-xs text-muted-foreground">No data yet</p>
               </CardContent>
             </Card>
             
@@ -173,8 +128,8 @@ const AdminDashboard = () => {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">18.5 min</div>
-                <p className="text-xs text-muted-foreground">+2.3 min from last month</p>
+                <div className="text-2xl font-bold">0 min</div>
+                <p className="text-xs text-muted-foreground">No data yet</p>
               </CardContent>
             </Card>
             
@@ -184,8 +139,8 @@ const AdminDashboard = () => {
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">78.3%</div>
-                <p className="text-xs text-muted-foreground">+5.2% from last month</p>
+                <div className="text-2xl font-bold">0%</div>
+                <p className="text-xs text-muted-foreground">No data yet</p>
               </CardContent>
             </Card>
           </div>
@@ -716,47 +671,51 @@ const AdminDashboard = () => {
         <TabsContent value="system" className="space-y-6">
           <h2 className="text-2xl font-bold">System Status</h2>
           
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>System Status</CardTitle>
-                <div className="flex items-center space-x-2">
-                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                  <span className="text-sm font-medium">All Systems Operational</span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
                 <div className="flex items-center justify-between">
+                  <CardTitle>System Status</CardTitle>
                   <div className="flex items-center space-x-2">
-                    <Server className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">API Services</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                    <span className="text-sm">99.9% Uptime</span>
+                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm font-medium">All Systems Operational</span>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Error Reports (Last 24h)</span>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Server className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">API Services</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                      <span className="text-sm">99.9% Uptime</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium">3 Errors</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Activity className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">System Load</span>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Error Reports (Last 24h)</span>
+                    </div>
+                    <span className="text-sm font-medium">0 Errors</span>
                   </div>
-                  <span className="text-sm font-medium">42%</span>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">System Load</span>
+                    </div>
+                    <span className="text-sm font-medium">5%</span>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            
+            <VapiConcurrencyMonitor />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

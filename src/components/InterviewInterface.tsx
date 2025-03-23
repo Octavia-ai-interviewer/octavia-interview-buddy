@@ -1,5 +1,6 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import createVapiClient from '@vapi-ai/web';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mic, MicOff, PauseCircle, PlayCircle, Loader2, Clock, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
@@ -29,9 +30,10 @@ const InterviewInterface = ({ resumeData }: InterviewInterfaceProps) => {
   const timerRef = useRef<number | null>(null);
   const audioVisualizerRef = useRef<HTMLDivElement>(null);
   
-  // VAPI integration setup (instead of LiveKit)
+  // VAPI integration setup
   const [isAudioConnected, setIsAudioConnected] = useState(false);
   const [isMicEnabled, setIsMicEnabled] = useState(false);
+  const vapiRef = useRef<any>(null);
   
   // Sample job data
   const jobData = {
@@ -50,23 +52,94 @@ const InterviewInterface = ({ resumeData }: InterviewInterfaceProps) => {
     }
   };
   
-  // For demo purposes, simulate VAPI connection
+  // Initialize VAPI client
+  useEffect(() => {
+    try {
+      // Create VAPI client instance
+      const publicKey = import.meta.env.VITE_VAPI_PUBLIC_KEY || '5205aa88-5883-4c11-8f4a-56b033e40f63';
+      // Note: Using new keyword as required by the VAPI constructor
+      const vapiClient = new createVapiClient(publicKey);
+      
+      vapiRef.current = vapiClient;
+      
+      // Clean up on unmount
+      return () => {
+        if (vapiRef.current) {
+          vapiRef.current.stop();
+        }
+      };
+    } catch (error) {
+      console.error("Error initializing VAPI client:", error);
+      toast.error("Failed to initialize voice interface. Please try again later.");
+    }
+  }, []);
+  
+  // Connect to VAPI
   const connectToVapi = async () => {
     try {
-      // For demo purposes, we'll just simulate a successful connection
+      if (!vapiRef.current) {
+        console.error("VAPI client not initialized");
+        toast.error("VAPI client not initialized. Please refresh the page and try again.");
+        return false;
+      }
+      
+      // Log VAPI configuration for debugging
+      console.log("VAPI Configuration:", {
+        assistantId: import.meta.env.VITE_VAPI_ASSISTANT_ID || "Using default ID",
+        publicKey: import.meta.env.VITE_VAPI_PUBLIC_KEY ? "Key provided" : "Using default key"
+      });
+      
+      // Request microphone permissions explicitly
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop()); // Stop the stream after getting permission
+        console.log("Microphone permission granted");
+      } catch (micError) {
+        console.error("Microphone permission denied:", micError);
+        toast.error("Microphone access denied. Please allow microphone access and try again.");
+        return false;
+      }
+      
+      // Start a conversation with the Octavia assistant
+      await vapiRef.current.start({
+        assistant: import.meta.env.VITE_VAPI_ASSISTANT_ID || "a1218d48-1102-4890-a0a6-d0ed2d207410",
+        // Optional parameters for the conversation
+        metadata: {
+          resumeData: resumeData ? JSON.stringify(resumeData) : undefined,
+          jobTitle: jobData.title,
+        },
+        // Force Octavia to initiate the conversation
+        firstMessage: true,
+        // Handle transcript updates
+        onTranscript: (transcript) => {
+          console.log("Transcript update:", transcript);
+          setTranscript(transcript.text);
+        },
+        // Handle errors
+        onError: (error) => {
+          console.error("VAPI error:", error);
+          toast.error("Error during interview: " + (error.message || "Unknown error"));
+        },
+      });
+      
       setIsAudioConnected(true);
+      setIsMicEnabled(true);
       toast.success("Audio connected successfully");
       return true;
     } catch (error) {
       console.error("VAPI connection error:", error);
-      toast.error("Audio connection failed - please try again");
+      toast.error(`Audio connection failed: ${error.message || "Unknown error"}. Please try again.`);
       return false;
     }
   };
   
   const enableMicrophone = async () => {
     try {
-      // In a real implementation, this would enable the microphone via VAPI
+      if (!vapiRef.current) {
+        throw new Error("VAPI client not initialized");
+      }
+      
+      await vapiRef.current.setMuted(false);
       setIsMicEnabled(true);
     } catch (error) {
       console.error("Error enabling microphone:", error);
@@ -76,7 +149,11 @@ const InterviewInterface = ({ resumeData }: InterviewInterfaceProps) => {
   
   const disableMicrophone = async () => {
     try {
-      // In a real implementation, this would disable the microphone via VAPI
+      if (!vapiRef.current) {
+        throw new Error("VAPI client not initialized");
+      }
+      
+      await vapiRef.current.setMuted(true);
       setIsMicEnabled(false);
     } catch (error) {
       console.error("Error disabling microphone:", error);
@@ -141,46 +218,32 @@ const InterviewInterface = ({ resumeData }: InterviewInterfaceProps) => {
   }, [timeRemaining, isRecording]);
   
   const handleStartRecording = async () => {
-    // Connect to VAPI (or simulate in demo mode)
+    // Connect to VAPI
     const connected = await connectToVapi();
     
     if (connected) {
       setIsRecording(true);
       setIsPaused(false);
       setTranscript('');
-      
-      // Simulate transcription updating as user speaks
-      const transcriptionInterval = setInterval(() => {
-        if (!isRecording || isPaused) {
-          clearInterval(transcriptionInterval);
-          return;
-        }
-        
-        // Simulate partial transcription (in real app, this would come from VAPI)
-        const demoResponses = [
-          "I have over five years of experience in software development...",
-          "My background includes working with cross-functional teams to deliver high-quality products...",
-          "I've specialized in frontend development using React and TypeScript...",
-          "In my previous role, I led a team of three developers to implement a new feature...",
-        ];
-        
-        const randomResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
-        setTranscript(prev => prev + (prev ? ' ' : '') + randomResponse);
-      }, 5000); // Update every 5 seconds
     }
   };
   
-  const handleStopRecording = () => {
+  const handleStopRecording = async () => {
     setIsRecording(false);
     setIsLoading(true);
     
     // Disconnect from VAPI
-    if (isAudioConnected) {
-      disableMicrophone();
-      setIsAudioConnected(false);
+    if (isAudioConnected && vapiRef.current) {
+      try {
+        await vapiRef.current.stop();
+        setIsAudioConnected(false);
+        setIsMicEnabled(false);
+      } catch (error) {
+        console.error("Error stopping VAPI:", error);
+      }
     }
     
-    // Simulate AI processing time
+    // Process the interview results
     setTimeout(() => {
       setIsLoading(false);
     }, 2000);

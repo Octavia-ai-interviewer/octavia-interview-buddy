@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 interface PreInterviewDialogProps {
@@ -17,6 +17,9 @@ const PreInterviewDialog = ({ open, onClose, onStartInterview }: PreInterviewDia
           <DialogTitle className="text-center text-xl">
             Start your conversation with Octavia and increase your chance of advancing!
           </DialogTitle>
+          <DialogDescription className="text-center">
+            Practice with our AI interviewer to improve your interview skills
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-4 space-y-6">
