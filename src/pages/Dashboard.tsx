@@ -7,9 +7,27 @@ import SessionManagement from '@/components/SessionManagement';
 import BillingControls from '@/components/BillingControls';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
+
+interface SessionPurchase {
+  sessions: number;
+  cost: number;
+  date: Date;
+}
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [sessionPurchases, setSessionPurchases] = useState<SessionPurchase[]>([]);
+  
+  const handleSessionPurchase = (sessions: number, cost: number) => {
+    const newPurchase = {
+      sessions,
+      cost,
+      date: new Date()
+    };
+    
+    setSessionPurchases(prev => [...prev, newPurchase]);
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -26,25 +44,41 @@ const Dashboard = () => {
               value={activeTab}
             >
               <TabsList className="w-full grid grid-cols-3">
-                <TabsTrigger value="overview" data-tooltip="View institution overview">Overview</TabsTrigger>
-                <TabsTrigger value="session" data-tooltip="Manage interview sessions">Session Management</TabsTrigger>
-                <TabsTrigger value="billing" data-tooltip="Manage billing and payments">Billing & Payments</TabsTrigger>
+                <TabsTrigger 
+                  value="overview"
+                  tooltip="Overview of your institution's performance metrics and key statistics"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="session"
+                  tooltip="Manage your institution's interview session pool and allocation settings"
+                >
+                  Session Pool
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="billing"
+                  tooltip="Manage billing, payments, and subscription details"
+                >
+                  Billing & Payments
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="overview">
                 <InstitutionDashboard />
               </TabsContent>
               <TabsContent value="session">
-                <SessionManagement />
+                <SessionManagement onSessionPurchase={handleSessionPurchase} />
               </TabsContent>
               <TabsContent value="billing">
-                <BillingControls />
+                <BillingControls sessionPurchases={sessionPurchases} />
               </TabsContent>
             </Tabs>
           </div>
         </TooltipProvider>
       </main>
       <Footer />
+      <Toaster />
     </div>
   );
 };

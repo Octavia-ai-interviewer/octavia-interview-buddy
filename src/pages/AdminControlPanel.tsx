@@ -9,8 +9,21 @@ import StudentManagement from '@/components/StudentManagement';
 import ResourceManagement from '@/components/ResourceManagement';
 import BroadcastSystem from '@/components/BroadcastSystem';
 import AIAnalytics from '@/components/AIAnalytics';
+import FinancialManagement from '@/components/FinancialManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
+import { 
+  AlertDialog, 
+  AlertDialogTrigger, 
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel
+} from '@/components/ui/alert-dialog';
 
 const AdminControlPanel = () => {
   const isMobile = useIsMobile();
@@ -30,13 +43,49 @@ const AdminControlPanel = () => {
               onValueChange={setActiveTab}
               value={activeTab}
             >
-              <TabsList className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'w-full grid-cols-6'}`}>
-                <TabsTrigger value="dashboard" data-tooltip="Platform overview, metrics, and performance">Dashboard</TabsTrigger>
-                <TabsTrigger value="institutions" data-tooltip="Manage institution accounts and settings">Institutions</TabsTrigger>
-                <TabsTrigger value="students" data-tooltip="Manage student accounts and activities">Students</TabsTrigger>
-                <TabsTrigger value="resources" data-tooltip="Upload and manage platform resources">Resources</TabsTrigger>
-                <TabsTrigger value="broadcasting" data-tooltip="Send announcements to users">Broadcast</TabsTrigger>
-                <TabsTrigger value="analytics" data-tooltip="Advanced metrics and data analysis">Analytics</TabsTrigger>
+              <TabsList className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'w-full grid-cols-7'}`}>
+                <TabsTrigger 
+                  value="dashboard" 
+                  tooltip="Platform overview, metrics, and performance statistics"
+                >
+                  Dashboard
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="institutions" 
+                  tooltip="Manage institution accounts, settings, and subscription status"
+                >
+                  Institutions
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="students" 
+                  tooltip="Manage student accounts, access, and activity metrics"
+                >
+                  Students
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="resources" 
+                  tooltip="Upload and manage platform resources, templates, and content"
+                >
+                  Resources
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="broadcasting" 
+                  tooltip="Send announcements and notifications to platform users"
+                >
+                  Broadcast
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  tooltip="Advanced data analysis and performance insights"
+                >
+                  Analytics
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="financial" 
+                  tooltip="Platform pricing management, margins, and revenue tracking"
+                >
+                  Financial
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="dashboard">
@@ -57,11 +106,15 @@ const AdminControlPanel = () => {
               <TabsContent value="analytics">
                 <AIAnalytics />
               </TabsContent>
+              <TabsContent value="financial">
+                <FinancialManagement />
+              </TabsContent>
             </Tabs>
           </div>
         </TooltipProvider>
       </main>
       <Footer />
+      <Toaster />
     </div>
   );
 };

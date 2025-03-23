@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -22,7 +21,12 @@ const Interview = () => {
   const handleResumeUpload = (data: any) => {
     setResumeData(data);
     setShowResumeDialog(false);
-    setShowPreInterviewDialog(true);
+    
+    if (data.type === 'voice') {
+      setShowInterviewInterface(true);
+    } else {
+      setShowPreInterviewDialog(true);
+    }
   };
 
   const handleStartInterview = () => {

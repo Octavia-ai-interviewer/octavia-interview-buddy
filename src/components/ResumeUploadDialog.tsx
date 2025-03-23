@@ -4,21 +4,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LinkIcon, FileUp, PenLine } from 'lucide-react';
+import { LinkIcon, FileUp, Mic } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ResumeUploadDialogProps {
   open: boolean;
   onClose: () => void;
-  onContinue: (resumeData: { type: 'linkedin' | 'file' | 'text', content: string | File }) => void;
+  onContinue: (resumeData: { type: 'linkedin' | 'file' | 'voice', content: string | File }) => void;
   studentName?: string;
 }
 
 const ResumeUploadDialog = ({ open, onClose, onContinue, studentName }: ResumeUploadDialogProps) => {
-  const [selectedOption, setSelectedOption] = useState<'linkedin' | 'file' | 'text' | null>(null);
+  const [selectedOption, setSelectedOption] = useState<'linkedin' | 'file' | 'voice' | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [resumeText, setResumeText] = useState('');
+  const [voiceSelected, setVoiceSelected] = useState(false);
 
   const handleContinue = () => {
     if (!selectedOption) return;
@@ -27,15 +27,15 @@ const ResumeUploadDialog = ({ open, onClose, onContinue, studentName }: ResumeUp
       onContinue({ type: 'linkedin', content: linkedinUrl });
     } else if (selectedOption === 'file' && resumeFile) {
       onContinue({ type: 'file', content: resumeFile });
-    } else if (selectedOption === 'text' && resumeText) {
-      onContinue({ type: 'text', content: resumeText });
+    } else if (selectedOption === 'voice' && voiceSelected) {
+      onContinue({ type: 'voice', content: 'voice-interaction' });
     }
   };
 
   const isOptionComplete = () => {
     if (selectedOption === 'linkedin') return !!linkedinUrl;
     if (selectedOption === 'file') return !!resumeFile;
-    if (selectedOption === 'text') return !!resumeText;
+    if (selectedOption === 'voice') return voiceSelected;
     return false;
   };
 
@@ -127,30 +127,31 @@ const ResumeUploadDialog = ({ open, onClose, onContinue, studentName }: ResumeUp
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedOption === 'text' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
-                  onClick={() => setSelectedOption('text')}
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedOption === 'voice' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
+                  onClick={() => {
+                    setSelectedOption('voice');
+                    setVoiceSelected(true);
+                  }}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <PenLine className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Paste Resume Text Manually</span>
+                    <Mic className="h-5 w-5 text-primary" />
+                    <span className="font-medium">Speak with Octavia AI</span>
                   </div>
                   
-                  {selectedOption === 'text' && (
-                    <div className="mt-3">
-                      <Label htmlFor="resume-text">Your resume</Label>
-                      <textarea 
-                        id="resume-text"
-                        placeholder="Paste your resume text here..."
-                        value={resumeText}
-                        onChange={(e) => setResumeText(e.target.value)}
-                        className="w-full min-h-[150px] mt-2 p-3 rounded-md border border-input bg-background"
-                      />
+                  {selectedOption === 'voice' && (
+                    <div className="mt-3 text-center">
+                      <div className="bg-primary/10 rounded-lg p-4 mt-2">
+                        <Mic className="h-10 w-10 text-primary mx-auto mb-2" />
+                        <p className="text-sm">
+                          Just speak directly with Octavia AI. No typing needed - our AI will understand your experience and skills through conversation.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Manually enter your resume information</p>
+                <p>Speak directly with Octavia AI - no typing required</p>
               </TooltipContent>
             </Tooltip>
           </div>
