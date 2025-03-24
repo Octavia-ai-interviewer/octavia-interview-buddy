@@ -83,10 +83,17 @@ const InterviewInterface = ({ resumeData }: InterviewInterfaceProps) => {
         return false;
       }
       
+      // Log VAPI client details for debugging
+      console.log("VAPI Client:", {
+        type: typeof vapiRef.current,
+        methods: Object.keys(vapiRef.current),
+        hasStart: typeof vapiRef.current.start === 'function'
+      });
+      
       // Log VAPI configuration for debugging
       console.log("VAPI Configuration:", {
-        assistantId: import.meta.env.VITE_VAPI_ASSISTANT_ID || "Using default ID",
-        publicKey: import.meta.env.VITE_VAPI_PUBLIC_KEY ? "Key provided" : "Using default key"
+        assistantId: import.meta.env.VITE_VAPI_ASSISTANT_ID || "a1218d48-1102-4890-a0a6-d0ed2d207410",
+        publicKey: import.meta.env.VITE_VAPI_PUBLIC_KEY || "5205aa88-5883-4c11-8f4a-56b033e40f63"
       });
       
       // Request microphone permissions explicitly
@@ -100,34 +107,50 @@ const InterviewInterface = ({ resumeData }: InterviewInterfaceProps) => {
         return false;
       }
       
-      // Start a conversation with the Octavia assistant
-      await vapiRef.current.start({
-        assistant: import.meta.env.VITE_VAPI_ASSISTANT_ID || "a1218d48-1102-4890-a0a6-d0ed2d207410",
-        // Optional parameters for the conversation
-        metadata: {
-          resumeData: resumeData ? JSON.stringify(resumeData) : undefined,
-          jobTitle: jobData.title,
-        },
-        // Force Octavia to initiate the conversation
-        firstMessage: true,
-        // Handle transcript updates
-        onTranscript: (transcript) => {
-          console.log("Transcript update:", transcript);
-          setTranscript(transcript.text);
-        },
-        // Handle errors
-        onError: (error) => {
-          console.error("VAPI error:", error);
-          toast.error("Error during interview: " + (error.message || "Unknown error"));
-        },
-      });
-      
-      setIsAudioConnected(true);
-      setIsMicEnabled(true);
-      toast.success("Audio connected successfully");
-      return true;
+      try {
+        // Start a conversation with the Octavia assistant
+        const startParams = {
+          assistant: import.meta.env.VITE_VAPI_ASSISTANT_ID || "a1218d48-1102-4890-a0a6-d0ed2d207410",
+          // Minimal parameters to reduce potential issues
+          firstMessage: true,
+          onTranscript: (transcript) => {
+            console.log("Transcript update:", transcript);
+            setTranscript(transcript.text);
+          },
+          onError: (error) => {
+            console.error("VAPI error:", error);
+            toast.error("Error during interview: " + (error.message || "Unknown error"));
+          },
+        };
+        
+        console.log("Starting VAPI with params:", startParams);
+        await vapiRef.current.start(startParams);
+        
+        setIsAudioConnected(true);
+        setIsMicEnabled(true);
+        toast.success("Audio connected successfully");
+        return true;
+      } catch (startError) {
+        console.error("VAPI start error:", startError);
+        console.error("Error details:", {
+          name: startError.name,
+          message: startError.message,
+          stack: startError.stack,
+          response: startError.response ? {
+            status: startError.response.status,
+            data: startError.response.data
+          } : 'No response data'
+        });
+        toast.error(`Failed to start VAPI: ${startError.message || "Unknown error"}. Please try again.`);
+        return false;
+      }
     } catch (error) {
       console.error("VAPI connection error:", error);
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       toast.error(`Audio connection failed: ${error.message || "Unknown error"}. Please try again.`);
       return false;
     }
